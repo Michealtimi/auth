@@ -7,15 +7,15 @@ export declare class AuthController {
         success: boolean;
         message: string;
         data: {
+            email: string | null;
+            password: string | null;
             id: string;
             name: string | null;
-            email: string | null;
             role: string | null;
-            password: string | null;
             createdAt: Date;
             updatedAt: Date;
         };
     }>;
-    signin(): Promise<string>;
-    signout(): Promise<string>;
+    signin(dto: AuthDto, res: any, req: any): Promise<import("express").Response<any, Record<string, any>>>;
+    signout(res: any, req: any): Promise<import("express").Response<any, Record<string, any>>>;
 }

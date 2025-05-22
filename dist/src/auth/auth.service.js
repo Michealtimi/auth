@@ -13,10 +13,14 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const bcrypt = require('bcryptjs');
 const prisma_service_1 = require("../../prisma/prisma.service");
+const jwt_1 = require("@nestjs/jwt");
+const constant_1 = require("../utils/constant");
 let AuthService = class AuthService {
     prisma;
-    constructor(prisma) {
+    jwt;
+    constructor(prisma, jwt) {
         this.prisma = prisma;
+        this.jwt = jwt;
     }
     async signup(dto) {
         const { email, password } = dto;
@@ -37,21 +41,51 @@ let AuthService = class AuthService {
             data: user
         };
     }
-    async signin() {
-        return '';
+    async signin(dto, req, res) {
+        const { email, password } = dto;
+        const foundUser = await this.prisma.user.findUnique({ where: { email } });
+        if (!foundUser) {
+            throw new common_1.BadRequestException("Wrong Credentials");
+        }
+        if (!foundUser.password) {
+            throw new common_1.BadRequestException("Wrong Credentials");
+        }
+        const isMatch = await this.comparePassword({ password, hashedPassword: foundUser.password });
+        if (!isMatch) {
+            throw new common_1.BadRequestException("Wrong Credentials");
+        }
+        if (!foundUser.email) {
+            throw new common_1.BadRequestException("User email is missing");
+        }
+        const token = await this.signToken({
+            id: foundUser.id,
+            email: foundUser.email
+        });
+        if (!token) {
+            throw new common_1.ForbiddenException("Token generation failed");
+        }
+        res.cookie('token', token);
+        return res.send({ message: 'Logged in Succefully' });
     }
-    async signout() {
-        return '';
+    async signout(req, res) {
+        res.clearCookie('token');
+        return res.send({ message: 'Logged out successfully' });
     }
     async hashPassword(password) {
         const saltOrRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltOrRounds);
-        return hashedPassword;
+        return await bcrypt.hash(password, saltOrRounds);
+    }
+    async comparePassword(args) {
+        return await bcrypt.compare(args.password, args.hashedPassword);
+    }
+    async signToken(args) {
+        const payload = args;
+        return this.jwt.signAsync(payload, { secret: constant_1.jwtSecret });
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

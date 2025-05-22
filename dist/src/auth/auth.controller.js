@@ -24,11 +24,11 @@ let AuthController = class AuthController {
     signup(dto) {
         return this.authService.signup(dto);
     }
-    signin() {
-        return this.authService.signin();
+    signin(dto, res, req) {
+        return this.authService.signin(dto, req, res);
     }
-    signout() {
-        return this.authService.signout();
+    signout(res, req) {
+        return this.authService.signout(req, res);
     }
 };
 exports.AuthController = AuthController;
@@ -41,14 +41,19 @@ __decorate([
 ], AuthController.prototype, "signup", null);
 __decorate([
     (0, common_1.Post)('signin'),
+    __param(0, (0, common_1.Body)(common_1.ValidationPipe)),
+    __param(1, (0, common_1.Res)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [auth_dto_1.AuthDto, Object, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signin", null);
 __decorate([
     (0, common_1.Get)('signout'),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signout", null);
 exports.AuthController = AuthController = __decorate([
